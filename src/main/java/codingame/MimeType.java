@@ -29,23 +29,21 @@ public class MimeType {
     Scanner in = new Scanner(System.in);
     int N = in.nextInt(); // Number of elements which make up the association table.
     int Q = in.nextInt(); // Number Q of file names to be analyzed.
-
     HashMap<String, String> mappingTable = new HashMap<String, String> ();
-
     for (int i = 0; i < N; i++) {
       String EXT = in.next(); // file extension
       String MT = in.next(); // MIME type.
-
       mappingTable.put(EXT.toLowerCase(), MT);
     }
     in.nextLine();
     for (int i = 0; i < Q; i++) {
-      String FNAME = in.nextLine().toLowerCase(); // One file name per line.
+      String FNAME = in.nextLine(); // One file name per line.
       String mapping = "UNKNOWN";
       String[] split = FNAME.split("\\.");
-      if (split.length > 1) {
-        String type = mappingTable.get(split[split.length - 1]);
-        if (type != null && FNAME.endsWith(type)) mapping = type;
+      if (split.length > 0 ) {
+        String typeKey = split[split.length - 1];
+        String type = mappingTable.get(typeKey.toLowerCase());
+        if (type != null && FNAME.endsWith("." + typeKey)) mapping = type;
       }
       System.out.println(mapping);
     }
