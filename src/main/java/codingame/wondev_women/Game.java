@@ -46,7 +46,7 @@ public class Game {
     }
   }
 
-  Action getBestAction() {
+  Action sortBestAction() {
     Collections.sort(actions, (a1, a2) -> {
       if (a1.score - a2.score > 0)
         return -1;
@@ -63,14 +63,15 @@ public class Game {
     Coord[] myUnit = units.get(0);
     for (int i = 0; i < units_per_player  ; i++) {
       Coord cori = myUnit[i];
-      if (map[cori.x][cori.y] != '4') {
-        score += Math.sqrt(map[cori.x][cori.y] - '0');
+      char newPlace = map[cori.y][cori.x];
+      if (newPlace != '4') {
+        score += Math.pow(newPlace - '0', 2);
       }
     }
     for(int i = 0; i < size; i++) {
       for(int j = 0; j < size; j++) {
-        if (map[i][j] != '4') {
-          score += Math.sqrt(map[i][j] - '0');
+        if (map[i][j] != '4' && map[i][j] != '.' ) {
+          score += Math.pow(map[i][j] - '0', 2);
         }
       }
     }
@@ -85,14 +86,14 @@ public class Game {
   }
 
   void build(Coord cor) {
-    if(this.map[cor.x][cor.y] != '.') {
-      this.map[cor.x][cor.y] += 1;
+    if(this.map[cor.y][cor.x] != '.') {
+      this.map[cor.y][cor.x] += 1;
     }
   }
 
   void destroy(Coord cor) {
-    if(this.map[cor.x][cor.y] > '0') {
-      this.map[cor.x][cor.y] -= 1;
+    if(this.map[cor.y][cor.x] > '0') {
+      this.map[cor.y][cor.x] -= 1;
     }
   }
 

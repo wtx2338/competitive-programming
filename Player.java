@@ -192,7 +192,7 @@ class Player {
 	      this.reverseAction(a);
 	    }
 	  }
-	  Action getBestAction() {
+	  Action sortBestAction() {
 	    Collections.sort(actions, (a1, a2) -> {
 	      if (a1.score - a2.score > 0)
 	        return -1;
@@ -208,14 +208,15 @@ class Player {
 	    Coord[] myUnit = units.get(0);
 	    for (int i = 0; i < units_per_player  ; i++) {
 	      Coord cori = myUnit[i];
-	      if (map[cori.x][cori.y] != '4') {
-	        score += Math.sqrt(map[cori.x][cori.y] - '0');
+	      char newPlace = map[cori.y][cori.x];
+	      if (newPlace != '4') {
+	        score += Math.pow(newPlace - '0', 2);
 	      }
 	    }
 	    for(int i = 0; i < size; i++) {
 	      for(int j = 0; j < size; j++) {
-	        if (map[i][j] != '4') {
-	          score += Math.sqrt(map[i][j] - '0');
+	        if (map[i][j] != '4' && map[i][j] != '.' ) {
+	          score += Math.pow(map[i][j] - '0', 2);
 	        }
 	      }
 	    }
@@ -228,13 +229,13 @@ class Player {
 	    build(newBlockCor);
 	  }
 	  void build(Coord cor) {
-	    if(this.map[cor.x][cor.y] != '.') {
-	      this.map[cor.x][cor.y] += 1;
+	    if(this.map[cor.y][cor.x] != '.') {
+	      this.map[cor.y][cor.x] += 1;
 	    }
 	  }
 	  void destroy(Coord cor) {
-	    if(this.map[cor.x][cor.y] > '0') {
-	      this.map[cor.x][cor.y] -= 1;
+	    if(this.map[cor.y][cor.x] > '0') {
+	      this.map[cor.y][cor.x] -= 1;
 	    }
 	  }
 	  void reverseAction(Action a) {
@@ -326,36 +327,50 @@ class Player {
 	  }
 	}
   public static void main(String args[]) {
+    boolean debug = true;
     Scanner in = new Scanner(System.in);
     int size = in.nextInt();
     int unitsPerPlayer = in.nextInt();
+    if(debug) System.err.println(size + " " + unitsPerPlayer);
     Game game = new Game(size, unitsPerPlayer);
     while (true) {
       for (int i = 0; i < size; i++) {
         String row = in.next();
+        if(debug) System.err.print(row + " ");
         game.readLine(i, row);
       }
       for (int i = 0; i < unitsPerPlayer; i++) {
         int unitX = in.nextInt();
         int unitY = in.nextInt();
         game.readUnit(0, i, unitX, unitY);
+        if(debug) System.err.print(unitX + " ");
+        if(debug) System.err.print(unitY + " ");
       }
       for (int i = 0; i < unitsPerPlayer; i++) {
         int otherX = in.nextInt();
         int otherY = in.nextInt();
         game.readUnit(1, i, otherX, otherY);
+        if(debug) System.err.print(otherX + " ");
+        if(debug) System.err.print(otherY + " ");
       }
       int legalActions = in.nextInt();
       game.actions = new ArrayList(legalActions);
+      if(debug) System.err.print(legalActions + " ");
       for (int i = 0; i < legalActions; i++) {
         String atype = in.next();
         int index = in.nextInt();
         String dir1 = in.next();
         String dir2 = in.next();
         game.actions.add(new Action(atype, index, dir1, dir2));
+        if(debug) System.err.print(atype + " ");
+        if(debug) System.err.print(index + " ");
+        if(debug) System.err.print(dir1 + " ");
+        if(debug) System.err.print(dir2 + " ");
       }
       game.calculateScore();
-      System.out.println(game.getBestAction().toAction());
+      game.sortBestAction();
+      if(debug) System.err.println(game.toString());
+      System.out.println(game.actions.get(0).toAction());
     }
   }
 }
