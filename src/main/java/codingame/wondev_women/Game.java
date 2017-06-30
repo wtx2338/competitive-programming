@@ -10,12 +10,16 @@ import java.util.Comparator;
  * Created by swu on 27/06/2017.
  */
 public class Game {
+  int MY_ID = 0;
   int NB_PLAYER = 2;
   char[][] map;
   ArrayList<Coord[]> units = new ArrayList(NB_PLAYER);
   int size;
   int units_per_player;
   ArrayList<Action> actions;
+
+  private int eIndex = -1;
+  private Coord ePos = null;
 
   Game(int size, int units_per_player) {
     this.size = size;
@@ -41,7 +45,7 @@ public class Game {
     for (int i = 0; i < actions.size(); i++) {
       Action a = actions.get(i);
       this.performAction(a);
-      a.score= calculate();
+      a.score= calculate(a);
       this.reverseAction(a);
     }
   }
@@ -58,16 +62,45 @@ public class Game {
     return actions.get(0);
   }
 
-  double calculate() {
+  double calculate(Action a) {
     double score = 0;
+    score += myUnitScore();
+    score += eUnitScore();
+    score += mapScore();
+    if (a.isPush()) { score +=  5; }
+    return score;
+  }
+
+  // My Unit want to get a higher place
+  double myUnitScore() {
     Coord[] myUnit = units.get(0);
     for (int i = 0; i < units_per_player  ; i++) {
       Coord cori = myUnit[i];
       char newPlace = map[cori.y][cori.x];
       if (newPlace != '4') {
-        score += Math.pow(newPlace - '0', 2);
+        return Math.pow(newPlace - '0', 2);
       }
     }
+    return 0;
+  }
+
+  // Enemy's Unit want to get a lower place
+  double eUnitScore() {
+    double score = 0;
+    Coord[] eUnit = units.get(1);
+    for (int i = 0; i < units_per_player  ; i++) {
+      Coord cori = eUnit[i];
+      if (cori.y != -1 && cori.x != -1) {
+        char newPlace = map[cori.y][cori.x];
+        int h = newPlace - '0';
+        score += Math.pow(3 - h, 2);
+      }
+    }
+    return 0;
+  }
+
+  double mapScore() {
+    double score = 0;
     for(int i = 0; i < size; i++) {
       for(int j = 0; j < size; j++) {
         if (map[i][j] != '4' && map[i][j] != '.' ) {
@@ -80,9 +113,26 @@ public class Game {
 
   void performAction(Action a) {
     Coord[] myUnit = units.get(0);
-    myUnit[a.index] = newCoord(myUnit[a.index], a.dir1);
-    Coord newBlockCor = newCoord(myUnit[a.index], a.dir2);
-    build(newBlockCor);
+    if (a.isPush()) {
+      Coord[] eUnit = units.get(1);
+      // Calculate new enemy position
+      Coord eCoord = newCoord(myUnit[a.index], a.dir1);
+      int i = 0;
+      boolean found = false;
+      while(i < eUnit.length && !found) {
+        if(eUnit[i].equals(eCoord)) {
+          eIndex = i;
+          ePos = eUnit[i];
+          eUnit[i] = newCoord(eCoord, a.dir2);
+          found = true;
+        }
+        i++;
+      }
+    } else {
+      myUnit[a.index] = newCoord(myUnit[a.index], a.dir1);
+      Coord newBlockCor = newCoord(myUnit[a.index], a.dir2);
+      build(newBlockCor);
+    }
   }
 
   void build(Coord cor) {
@@ -99,9 +149,14 @@ public class Game {
 
   void reverseAction(Action a) {
     Coord[] myUnit = units.get(0);
-    Coord newBlockCor = newCoord(myUnit[a.index], a.dir2);
-    destroy(newBlockCor);
-    myUnit[a.index] = oldCoord(myUnit[a.index], a.dir1);
+    if (a.isPush()) {
+      Coord[] eUnit = units.get(1);
+      eUnit[eIndex] = ePos;
+    } else {
+      Coord newBlockCor = newCoord(myUnit[a.index], a.dir2);
+      destroy(newBlockCor);
+      myUnit[a.index] = oldCoord(myUnit[a.index], a.dir1);
+    }
   }
 
   static Coord newCoord(Coord cor, String dir) {

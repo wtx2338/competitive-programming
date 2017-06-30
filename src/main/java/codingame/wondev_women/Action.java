@@ -17,6 +17,10 @@ public class Action {
     dir2 = d2;
   }
 
+  boolean isPush() {
+    return type.equals("PUSH&BUILD");
+  }
+
   public String toString() {
     return type + " " + index + " " + dir1 + " " + dir2 + " " + score + "\n";
   }
